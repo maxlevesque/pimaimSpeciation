@@ -293,7 +293,7 @@ do i=1,ncation2
     enddo
  enddo
  nchargetot=nchargetot/float(nconfigs)
- write(6,*) nchargetot,totfrac
+!~  write(6,*) nchargetot,totfrac ! unverbose because usually lots and lots of serial executions are done and this completely mess the standard output.
 
  close(21)
  close(22)

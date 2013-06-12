@@ -1,2 +1,2 @@
 SConscript('./src/SConscript', variant_dir='obj')
-Program('pimaimSpeciationAnalysis',Glob('obj/*.o'))
+Program('pimaimSpeciation',Glob('obj/*.o'))

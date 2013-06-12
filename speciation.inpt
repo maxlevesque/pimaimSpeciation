@@ -1,0 +1,9 @@
+1      !Nsteps in file whose name is given above (last line of this input file)
+288    !NF
+144    !NCs
+72     !NBe
+44.359530304890050   ! box length, last line of restart.dat
+4.25   rcut1 between F and Cs, the minimum after first peak in radial distribution function
+4.25   rcut2 F Be
+6.614
+./speciation.coo.inpt

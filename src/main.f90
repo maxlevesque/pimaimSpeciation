@@ -5,7 +5,7 @@ program polym
 implicit none
 
 integer :: nmax
-parameter (nmax=2000)
+parameter (nmax=504)
 
 integer :: i,j,k,l
 integer :: imark,jmark
@@ -13,11 +13,11 @@ integer :: nconfigs,nequil,nanion,ncation1,ncation2,nion
 integer :: nneighb,nshar,nchain,nat,ichain,jchain,ntri,nmol
 
 integer, dimension(10)        :: shar
-integer, dimension(nmax)      :: chain,nF,nBe,ncharge
+integer, dimension(nmax)      :: chain,nF,nBe!,ncharge
 integer, dimension(nmax,nmax) :: atoms
 
-double precision :: boxlength,halfbox,halfboxrec
-double precision :: du,dx,dy,dz,r2,totfrac,nchargetot
+double precision :: boxlength, halfbox, halfboxrec
+double precision :: du,dx,dy,dz,r2,totfrac!,nchargetot
 double precision :: fracijBe,fracijF
 
 double precision, dimension(3) :: rdfmin, rdfmin2
@@ -37,13 +37,14 @@ read(10,*) ncation2
 read(10,*) boxlength
 
 nion=nanion+ncation1+ncation2
+if( nion > nmax ) stop 'STOP. nmax=504 now should be increased to be at least equal to nion'
 
 do i=1,3
    read(10,*) rdfmin(i)
    rdfmin2(i)=rdfmin(i)**2
 enddo
 
-read(10,'(a)') filein1
+read(10,'(a)') filein1 ! positions file name
 
 open(11,file=filein1,status='old')
 close(10)
@@ -51,15 +52,11 @@ close(10)
 halfbox=boxlength/2.0d0
 halfboxrec=1.0d0/halfbox
 
-nchargetot=0
+!~ nchargetot=0
 nmol=0
 totfrac=0
 
-do i=0,nmax
-   do j=0,nmax
-      spec(i,j)=0
-   enddo
-enddo
+spec = 0
 
 !loop over nconfigs
 do l=1,nconfigs
@@ -70,19 +67,14 @@ do i=1,nion
 enddo
 
 !Initialize variables
-do i=1,nmax
-   chain(i)=0
-   do j=1,nmax
-      atoms(i,j)=0
-   enddo
-enddo
-
+chain = 0
+atoms = 0
 nchain=0
 ntri=0
 
 !loop 1 over cations
 
-do i=1,ncation2
+do i=1,ncation2 ! Be
 
    imark=i+nanion+ncation1
    nneighb=0
@@ -201,7 +193,7 @@ do i=1,ncation2
        atoms(nchain,1)=1
        atoms(nchain,2)=imark
     endif
- enddo
+enddo
 
 
  ! Add the unshared F in the good chains
@@ -243,27 +235,24 @@ do i=1,ncation2
 
 
 
+nF = 0
+nBe = 0
+!~ ncharge = 0
 
- do i=1,nmax
-    nF(i)=0
-    nBe(i)=0
-    ncharge(i)=0
- enddo
-
- do i=1,nchain
+do i=1,nchain
     
        do j=1,atoms(i,1)
           if (atoms(i,j+1).le.nanion) then
              nF(i)=nF(i)+1
-             ncharge(i)=ncharge(i)-1
+!~              ncharge(i)=ncharge(i)-1
           else
              nBe(i)=nBe(i)+1
-             ncharge(i)=ncharge(i)+2
+!~              ncharge(i)=ncharge(i)+2
           endif
        enddo
-       nchargetot=nchargetot+ncharge(i)
+!~        nchargetot=nchargetot+ncharge(i)
        
-       if (nF(i).ne.0) then
+       if (nF(i)/=0) then
           spec(nBe(i),nF(i))=spec(nBe(i),nF(i))+1
           nmol=nmol+1
        endif
@@ -276,31 +265,27 @@ do i=1,ncation2
 
  enddo
 
- open(21,file='speciationBe.dat')
+ open(21,file='speciationBe.dat') 
  open(22,file='speciationF.dat')
 
  do i=0,nmax
     do j=0,nmax
        fracijBe=100.0*(spec(i,j))*float(i)/(float(nconfigs)*float(ncation2))
-       totfrac=totfrac+fracijBe
+!~        totfrac=totfrac+fracijBe
        fracijF=100.0*(spec(i,j))*float(j)/(float(nconfigs)*float(nanion))
-       if(fracijBe.gt. 0.1) then
-         write(21,*) fracijBe,'% de Be ',i,'F ',j
-       endif
-       if(fracijF.gt. 0.1) then
-         write(22,*) fracijF,'% de Be ',i,'F ',j
-       endif
+       if(fracijBe.gt. 0.1) write(21,*) fracijBe,'% de Be ',i,'F ',j
+       if(fracijF > 0.1) write(22,*) fracijF,'% de Be ',i,'F ',j
     enddo
  enddo
- nchargetot=nchargetot/float(nconfigs)
-!~  write(6,*) nchargetot,totfrac ! unverbose because usually lots and lots of serial executions are done and this completely mess the standard output.
+!~  nchargetot=nchargetot/float(nconfigs)
+!!!!!!!!~  write(6,*) nchargetot,totfrac ! unverbose because usually lots and lots of serial executions are done and this completely mess the standard output.
 
- close(21)
- close(22)
- close(11)
+close(21)
+close(22)
+close(11)
 
 
- end
+end program
 
 
 
@@ -310,7 +295,7 @@ implicit none
 
 integer :: nmax
 
-parameter (nmax=2000)
+parameter (nmax=504)
 
 integer :: i,j,k,nshar,nanion
 integer :: imark,jmark
@@ -346,7 +331,7 @@ do i=1,nanion
    dr1=dx1**2+dy1**2+dz1**2
    dr2=dx2**2+dy2**2+dz2**2
 
-   if (dr1.le.rdfcut2 .and. dr2.le.rdfcut2) then
+   if (dr1<=rdfcut2 .and. dr2<=rdfcut2) then
       nshar=nshar+1
       shar(nshar)=i
    endif
